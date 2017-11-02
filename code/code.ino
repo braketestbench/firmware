@@ -37,163 +37,197 @@
 #define SET				1
 #define RESET				0
 #define ACQ_LED_BLINK_MS	        250
-#define SAMPLE_RATE			10
+#define SAMPLE_RATE			1000
 #define NUMBER_OF_SAMPLES	        100
 
 //GLOBAL VARS
-int adcReads[]={
+static boolean enableAcquisition=false;
+static float adcReads[]={
   RESET,RESET,RESET,RESET,RESET,RESET};
-short DIGITAL_OUT_PORTS[]={
-  DIG_OUT_PORT_0,DIG_OUT_PORT_1,RELAY_OUT_0,RELAY_OUT_1,ACQ_LED};
+short COMMAND_PORTS[]={
+  DIG_OUT_PORT_0,DIG_OUT_PORT_1,RELAY_OUT_0,RELAY_OUT_1};
+boolean commandInstruction[]={
+  0,0,0,0};
 short DIGITAL_IN_PORTS[]={
   ADC_CON_0,ADC_CON_1,ADC_CON_2,ADC_CON_3,ADC_CON_4,ADC_CON_5};
 int samples=RESET;
 boolean state=RESET;
 
 
-void digitalOutputControl(unsigned char input){
-  for(int i=RESET;i<4;i++){
-    digitalWrite(DIGITAL_OUT_PORTS[i],((input >> i) & 1));
-  }
-}
-
-void resetDigitalOutputs(){
-  digitalOutputControl(NULL_DIGITAL_BYTE);
-  digitalWrite(ACQ_LED, RESET);
-}
-
-void IOsetup(){
-  //inputs
-  pinMode(ADC_CON_0,INPUT);
-  pinMode(ADC_CON_1,INPUT);
-  pinMode(ADC_CON_2,INPUT);
-  pinMode(ADC_CON_3,INPUT);
-  pinMode(ADC_CON_4,INPUT);
-  pinMode(ADC_CON_5,INPUT); 
-
-  //Outputs
-  pinMode(ACQ_LED,OUTPUT);
-  pinMode(DIG_OUT_PORT_0,OUTPUT);
-  pinMode(DIG_OUT_PORT_1,OUTPUT);
-  pinMode(RELAY_OUT_0,OUTPUT);
-  pinMode(RELAY_OUT_1,OUTPUT);
-  pinMode(PWM_OUT,OUTPUT);
-  //Reset Outputs
-  resetDigitalOutputs();
-
-}
-
-//Function to configure Timer 0 - PWM-OUT
-void configureTimer0(){
-  TCCR0B = TCCR0B & B11111000 | B00000001;
-}
-
-//Function to configure Timer 1 - ACQUISITION 
+//Funcao que configura o timer 1 - Aquisicao
 void configureTimer1(){
-  Timer1.initialize(SAMPLE_RATE);
   Timer1.attachInterrupt(timer1_OISR);
+  Timer1.initialize(SAMPLE_RATE);
   Timer1.stop();
 }
 
-//Function to configure timer 2 - LED
+//Funcao que configura o timer 2 - Led aquisicao
 void configureTimer2() {
   MsTimer2::set(ACQ_LED_BLINK_MS, timer2_OISR); 
-  MsTimer2::start();
 }
 
-//Timer 1 overflow interruption routine
+//Interrupcao pelo timer 1 por overflow
 void timer1_OISR(){
-  if (samples < NUMBER_OF_SAMPLES){
-    adcReads[0]+=analogRead(A0);
-    adcReads[1]+=analogRead(A1);
-    adcReads[2]+=analogRead(A2);
-    adcReads[3]+=analogRead(A3);
-    adcReads[4]+=analogRead(A4);
-    adcReads[5]+=analogRead(A5);
-    samples++;
+  if (samples<NUMBER_OF_SAMPLES){
+    if(enableAcquisition==true){
+      //Lendo dado analogico
+      adcReads[0]+=analogRead(A0);
+      adcReads[1]+=analogRead(A1);
+      adcReads[2]+=analogRead(A2);
+      adcReads[3]+=analogRead(A3);
+      adcReads[4]+=analogRead(A4);
+      adcReads[5]+=analogRead(A5);
+      samples++;
+    }   
   }
 }
 
-
-//Timer 2 overflow interruption routine
+//Interrupcao pelo timer 2 por overflow
 void timer2_OISR(){
-  //Serial.print("teste\n");
-  digitalWrite(ACQ_LED, digitalRead(ACQ_LED) ^ 1);
-}
-
-
-
-void clearAdcReads(){
-  for(int i=RESET;i<sizeof(adcReads);i++){
-    adcReads[i]=RESET;
+  if(enableAcquisition){
+    digitalWrite(ACQ_LED, digitalRead(ACQ_LED) ^ 1);
+  }
+  else{
+    digitalWrite(ACQ_LED, LOW);
   }
 }
 
-void acquisitionStart(){
-  samples=RESET;
-  clearAdcReads();
-  resetDigitalOutputs();
-  Timer1.restart();
-  //MsTimer2::start();
-  digitalWrite(ACQ_LED,HIGH);
+//FUNCAO QUE CONTROLA OS COMANDOS/SAIDAS-DIGITAIS
+void commandOutput(){
+  for(int i=0;i<sizeof(COMMAND_PORTS);i++){
+    if(commandInstruction[i]){
+      digitalWrite(COMMAND_PORTS[i],HIGH);
+    }
+    else{
+      digitalWrite(COMMAND_PORTS[i],LOW);
+    }
+  }
+
+
 }
 
+//Funcao que "reseta" os comandos/saidas digitais
+void resetCommandOutput(){
+  for(int i=0;i<sizeof(COMMAND_PORTS);i++){
+    commandInstruction[i]=0;
+  }
+  commandOutput();
+}
+
+//Funcao quando a acquisicao para
 void acquisitionStop(){
   Timer1.stop();
-  //MsTimer2::stop();
-  
-  digitalWrite(ACQ_LED,LOW);
+  enableAcquisition=false;
   samples=RESET;
-
-  clearAdcReads();
-  resetDigitalOutputs();
-
-}
-
-void setup(){
-  Serial.begin(BAUD_RATE);
-  IOsetup();
-  configureTimer0();
-  configureTimer1();
-  //configureTimer2();
-}
-
-void loop(){
-  unsigned char byteRead=RESET;
-
-  if(Serial.available()){
-    byteRead = Serial.read();
+  for(int i=0;i<6;i++){
+    adcReads[i]=RESET;
   }
-  
-  Serial.print(state);
+  resetCommandOutput();
+}
+
+//Funcao que escreve os resultados da aquisicao na porta serial
+void printResults(int * result){    
+  Serial.print(result[0]);
+  Serial.print(",");
+  Serial.print(result[1]);
+  Serial.print(",");
+  Serial.print(result[2]);
+  Serial.print(",");
+  Serial.print(result[3]);
+  Serial.print(",");
+  Serial.print(result[4]);
+  Serial.print(",");
+  Serial.print(result[5]);
   Serial.print("\n");
-  
-  switch(state) {
+}
 
-  case RESET  :
-    if (byteRead==START_ACQ_BYTE){
-      Serial.print("START ACQ\n");
-      state=SET;
-      acquisitionStart();
-    }
-    else{
-      state=RESET;
-    }
-    break;
 
-  case SET  :
-    if (byteRead==STOP_ACQ_BYTE){
-      state=RESET;
-      Serial.print("STOP ACQ\n");
 
-    }
-    else{
-      state=SET;
-    }
+//Funcao setup - inicializada com arduino
+void setup(){
 
-    break;
+  Serial.begin(9600);
+  pinMode(ACQ_LED,OUTPUT);
+  for(int i=0;i<4;i++){
+    pinMode(COMMAND_PORTS[i],OUTPUT);
+    digitalWrite(COMMAND_PORTS[i],LOW);
+  }
+  digitalWrite(ACQ_LED,LOW);
+
+  configureTimer1();
+  configureTimer2();
+  MsTimer2::start();
+
+
+}
+
+//Funcao loop - executada continuamente
+void loop(){
+  //parar o timer quando o numero de amostras for o desejado
+  if(samples>=NUMBER_OF_SAMPLES){
+    Timer1.stop();
+
+    static int resultAcq[6];
+    for(int counter=0;counter<6;counter++){
+      resultAcq[counter] = (int)roundf((adcReads[counter]/samples));    
+      adcReads[counter]=RESET;
+    }
+    samples=RESET;
+    Timer1.restart();   //reinciando o timer 
+
+    printResults(resultAcq);
+
+  }
+
+  //Verificado dado da porta serial
+  if (Serial.available()){
+
+    //Lendo o byte mais recente
+    char byteRead = Serial.read();
+
+    switch(byteRead) {
+
+      //Recebeu comando iniciar aquisicao
+    case START_ACQ_BYTE:
+      {
+        if(enableAcquisition==false){
+          //Habilita a aquisicao
+          enableAcquisition=true;
+          samples=RESET;
+          Timer1.restart();       
+        }            
+      }
+      break;
+    case STOP_ACQ_BYTE:
+      {
+        //Desabilita a aquisicao
+        acquisitionStop();
+
+
+      }
+      break;
+
+    default:
+      {
+        if ((byteRead >= NULL_DIGITAL_BYTE) &&  (byteRead <= MAX_DIGITAL_BYTE)){       //Controle dos comandos
+          for (int i = 3; i>-1; i--) {
+            commandInstruction[i]=((byteRead >> i) & 1);
+          }
+          commandOutput();
+
+        }
+        if ((byteRead >= NULL_SPEED_BYTE) &&  (byteRead <= MAX_SPEED_BYTE)){       //Controle dos comandos
+          
+        }
+      }
+
+      break; 
+    }
   }
 }
+
+
+
 
 
 
