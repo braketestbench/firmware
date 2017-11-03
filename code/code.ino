@@ -28,8 +28,8 @@
 #define	STOP_ACQ_BYTE		        34
 #define NULL_DIGITAL_BYTE	        96
 #define MAX_DIGITAL_BYTE	        111
-#define NULL_SPEED_BYTE		        155
-#define MAX_SPEED_BYTE		        255
+#define NULL_SPEED_BYTE		        120
+#define MAX_SPEED_BYTE		        220
 #define SENSOR_ERROR		        -1
 
 
@@ -126,24 +126,31 @@ void acquisitionStop(){
 }
 
 //Funcao que escreve os resultados da aquisicao na porta serial
-void printResults(int * result){    
-  Serial.print(result[0]);
-  Serial.print(",");
-  Serial.print(result[1]);
-  Serial.print(",");
-  Serial.print(result[2]);
-  Serial.print(",");
-  Serial.print(result[3]);
-  Serial.print(",");
-  Serial.print(result[4]);
-  Serial.print(",");
-  Serial.print(result[5]);
-  Serial.print("\n");
+void printResults(int * result){
+  int i=0;
+  for(i=0;i<6;i++){
+    if (!(digitalRead(DIGITAL_IN_PORTS[i]))){
+      Serial.print(result[i]);
+    }else{
+      Serial.print(SENSOR_ERROR);
+    }
+    
+    if(i<5){
+      Serial.print(",");
+    }else{
+      Serial.print("\n");
+    }
+  }  
+  
 }
 
+void speedControl(unsigned char input){
+	float analogOut = 1023*(input - NULL_SPEED_BYTE)/(MAX_SPEED_BYTE - NULL_SPEED_BYTE);
+        Serial.print(analogOut);
+        Serial.print("\n");
+	//analogWrite(PWM_OUT,analogOut);
+}
 
-
-//Funcao setup - inicializada com arduino
 void setup(){
 
   Serial.begin(9600);
@@ -183,7 +190,7 @@ void loop(){
   if (Serial.available()){
 
     //Lendo o byte mais recente
-    char byteRead = Serial.read();
+    unsigned char byteRead = Serial.read();
 
     switch(byteRead) {
 
@@ -200,10 +207,7 @@ void loop(){
       break;
     case STOP_ACQ_BYTE:
       {
-        //Desabilita a aquisicao
         acquisitionStop();
-
-
       }
       break;
 
@@ -217,7 +221,7 @@ void loop(){
 
         }
         if ((byteRead >= NULL_SPEED_BYTE) &&  (byteRead <= MAX_SPEED_BYTE)){       //Controle dos comandos
-          
+          speedControl(byteRead);
         }
       }
 
