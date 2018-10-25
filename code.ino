@@ -51,6 +51,10 @@
 #define ACQ_LED_BLINK_MS	        150
 #define NUMBER_OF_SAMPLES	        100
 
+//TIMER DEFINITIONS
+#define ACQ_LED_BLINK_MS			250
+#define SAMPLE_RATE_US				1000
+
 //GLOBAL VARS
 static boolean enableAcquisition=false;
 static float adcReads[]={
@@ -63,7 +67,7 @@ int outputPins[] = {DIG_OUT_1,DIG_OUT_2,DIG_OUT_3,MCU_LED_1};
 //Funcao que configura o timer 1 - Aquisicao
 void configureTimer1(){
   Timer1.attachInterrupt(timer1_OISR);
-  Timer1.initialize(SAMPLE_RATE);
+  Timer1.initialize(SAMPLE_RATE_US);
   Timer1.stop();
 }
 
@@ -93,10 +97,10 @@ void timer1_OISR(){
 //Interrupcao pelo timer 2 por overflow
 void timer2_OISR(){
   if(enableAcquisition){
-    digitalWrite(ACQ_LED, digitalRead(ACQ_LED) ^ 1);
+    digitalWrite(MCU_LED_1, digitalRead(MCU_LED_1) ^ 1);
   }
   else{
-    digitalWrite(ACQ_LED, LOW);
+    digitalWrite(MCU_LED_1, LOW);
   }
 }
 
