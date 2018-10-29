@@ -20,39 +20,39 @@ void loop(){
 		switch (byteRead){
 			case 49:
 				digitalWrite(DIG_OUT_1,LOW);
-				Serial.print("Output 1 = ON\n");
+				Serial.println("Output 1 = ON\n");
 			break;
 
 			case 50:
 				digitalWrite(DIG_OUT_1,HIGH);
-				Serial.print("Output 1 = OFF\n");
+				Serial.println("Output 1 = OFF\n");
 			break;
 
 			case 51:
 				digitalWrite(DIG_OUT_2,LOW);
-				Serial.print("Output 2 = ON\n");
+				Serial.println("Output 2 = ON\n");
 			break;
 
 			case 52:
 				digitalWrite(DIG_OUT_2,HIGH);
-				Serial.print("Output 2 = OFF\n");
+				Serial.println("Output 2 = OFF\n");
 			break;
 
 			case 53:
 				digitalWrite(DIG_OUT_3,LOW);
-				Serial.print("Output 3 = ON\n");
+				Serial.println("Output 3 = ON\n");
 			break;
 
 			case 54:
 				digitalWrite(DIG_OUT_3,HIGH);
-				Serial.print("Output 3 = OFF\n");
+				Serial.println("Output 3 = OFF\n");
 			break;
 
 			default:
 				digitalWrite(DIG_OUT_1,HIGH);
 				digitalWrite(DIG_OUT_2,HIGH);
 				digitalWrite(DIG_OUT_3,HIGH);
-				Serial.print("All Outputs OFF\n");
+				Serial.println("All Outputs OFF\n");
 			break;
 		}
 	}
