@@ -1,51 +1,53 @@
-//HW DEFINITIONS
+//HARDWARE DEFINITIONS
 //Digital Inputs
-#define	CKP_CON_1               7
-#define	THERM_CON_1					    4
-#define	THERM_CON_2					    12
-#define	LOAD_CON_1					    5
-#define	LOAD_CON_2					    13
-#define	VIB_CON_1 					    11
-#define DIG_IN_1  			    		1
-#define DIG_IN_2   	    				14
-#define DIG_IN_3      					16
+#define	CKP_CON_1                 7
+#define	THERM_CON_1					      4
+#define	THERM_CON_2					      12
+#define	LOAD_CON_1					      5
+#define	LOAD_CON_2					      13
+#define	VIB_CON_1 					      11
+#define DIG_IN_1  			    		  1
+#define DIG_IN_2   	    				  14
+#define DIG_IN_3      					  16
 
 //Digital Outputs
-#define DIG_OUT_1		            3
-#define	DIG_OUT_2		           	2
-#define	DIG_OUT_3		    			  0
-#define	MCU_LED_1   					  15
+#define DIG_OUT_1		              3
+#define	DIG_OUT_2		           	  2
+#define	DIG_OUT_3		    			    0
+#define	MCU_LED_1   					    15
 
 //Analog Inputs
-#define CKP_SIG_1 					    A0
-#define THERM_SIG_1					    A1
-#define THERM_SIG_2					    A2
-#define LOAD_SIG_1					    A3
-#define LOAD_SIG_2					    A4
-#define VIB_SIG_1					      A5
-#define AOUT_SIG_1	  	  			A7
-#define AOUT_SIG_2  	  				A8
+#define CKP_SIG_1 					      A0
+#define THERM_SIG_1					      A1
+#define THERM_SIG_2					      A2
+#define LOAD_SIG_1					      A3
+#define LOAD_SIG_2					      A4
+#define VIB_SIG_1					        A5
+#define AOUT_SIG_1	  	  			  A7
+#define AOUT_SIG_2  	  				  A8
 
 //Analog Outputs
-#define	PWM_OUT_1					      9
-#define	PWM_OUT_2					      10
+#define	PWM_OUT_1					        9
+#define	PWM_OUT_2					        10
 
 //COMMUNICATIONS DEFINITIONS
-#define BAUD_RATE					      115200
-#define PRINT_VERSION_BYTE      32
-#define FILTER_READ_BYTE		    33
-#define	ONE_READ_BYTE		        34
-#define ACQ_CMD_OFF_BYTE        35
-#define NULL_DIGITAL_BYTE       36
-#define MAX_DIGITAL_BYTE        42
-#define CH1_NULL_SPEED_BYTE		  75
-#define CH1_MAX_SPEED_BYTE		  100
-#define CH2_NULL_SPEED_BYTE		  101
-#define CH2_MAX_SPEED_BYTE		  126
+#define BAUD_RATE					        115200
+#define PRINT_VERSION_BYTE        32
+#define FILTER_READ_BYTE		      33
+#define	ONE_READ_BYTE		          34
+#define ACQ_CMD_OFF_BYTE          35
+#define NULL_DIGITAL_BYTE         36
+#define MAX_DIGITAL_BYTE          42
+#define CH1_NULL_SPEED_BYTE		    75
+#define CH1_MAX_SPEED_BYTE		    100
+#define CH2_NULL_SPEED_BYTE		    101
+#define CH2_MAX_SPEED_BYTE		    126
 
 //GENERAL DEFINITIONS
 #define SET							        1
 #define RESET						        0
+
+//Running Settup
 #define ACQ_LED_BLINK_MS	      150
 #define NUMBER_OF_SAMPLES	      100
 #define SAMPLE_RATE             250
@@ -112,11 +114,13 @@ ISR(TIMER4_COMPA_vect) {
   }
 }
 
-//Function that turns all the digital outputs off
+//Function that turns all the outputs off
 void resetCommandOutput() {
+  //resetting digital outputs
   digitalWrite(DIG_OUT_1, HIGH);
   digitalWrite(DIG_OUT_2, HIGH);
   digitalWrite(DIG_OUT_3, HIGH);
+  //resetting analog outputs
   analogWrite(PWM_OUT_1, RESET);
   analogWrite(PWM_OUT_2, RESET);
 }
@@ -142,6 +146,7 @@ void printResults(int * result) {
   }
 }
 
+//Function that does one analogRead of each channel and prints the results to the serial port
 void oneReadPrint() {
   int oneRead[] = {RESET, RESET, RESET, RESET, RESET, RESET, RESET, RESET};
   oneRead[0] = analogRead(CKP_SIG_1);
