@@ -252,33 +252,33 @@ void loop() {
       default:
         {
           if ((byteRead >= NULL_DIGITAL_BYTE) &&  (byteRead <= MAX_DIGITAL_BYTE)) {      //Controle dos comandos
-            unsigned char command = byteRead;
+            unsigned char command = byteRead - NULL_DIGITAL_BYTE;
             switch (command) {
-              case 36:
+              case 1:
                 digitalWrite(DIG_OUT_1, LOW);
                 break;
 
-              case 37:
+              case 2:
                 digitalWrite(DIG_OUT_1, HIGH);
                 break;
 
-              case 38:
+              case 3:
                 digitalWrite(DIG_OUT_2, LOW);
                 break;
 
-              case 39:
+              case 4:
                 digitalWrite(DIG_OUT_2, HIGH);
                 break;
 
-              case 40:
+              case 5:
                 digitalWrite(DIG_OUT_3, LOW);
                 break;
 
-              case 41:
+              case 6:
                 digitalWrite(DIG_OUT_3, HIGH);
                 break;
 
-              default:
+              default: //NULL_DIGITAL_BYTE COMMAND RECEIVED
                 digitalWrite(DIG_OUT_1, HIGH);
                 digitalWrite(DIG_OUT_2, HIGH);
                 digitalWrite(DIG_OUT_3, HIGH);
