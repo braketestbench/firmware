@@ -37,7 +37,7 @@
 #define	ONE_READ_BYTE		          34
 #define ACQ_CMD_OFF_BYTE          35
 #define NULL_DIGITAL_BYTE         36
-#define MAX_DIGITAL_BYTE          42
+#define MAX_DIGITAL_BYTE          43
 #define CH1_NULL_SPEED_BYTE		    75
 #define CH1_MAX_SPEED_BYTE		    100
 #define CH2_NULL_SPEED_BYTE		    101
@@ -256,26 +256,44 @@ void loop() {
             switch (command) {
               case 1:
                 digitalWrite(DIG_OUT_1, LOW);
+                digitalWrite(DIG_OUT_2, HIGH);
+                digitalWrite(DIG_OUT_3, HIGH);
                 break;
 
               case 2:
                 digitalWrite(DIG_OUT_1, HIGH);
+                digitalWrite(DIG_OUT_2, LOW);
+                digitalWrite(DIG_OUT_3, HIGH);
                 break;
 
               case 3:
+                digitalWrite(DIG_OUT_1, LOW);
                 digitalWrite(DIG_OUT_2, LOW);
+                digitalWrite(DIG_OUT_3, HIGH);
                 break;
 
               case 4:
+                digitalWrite(DIG_OUT_1, HIGH);
                 digitalWrite(DIG_OUT_2, HIGH);
+                digitalWrite(DIG_OUT_3, LOW);
                 break;
 
               case 5:
+                digitalWrite(DIG_OUT_1, LOW);
+                digitalWrite(DIG_OUT_2, HIGH);
                 digitalWrite(DIG_OUT_3, LOW);
                 break;
 
               case 6:
-                digitalWrite(DIG_OUT_3, HIGH);
+                digitalWrite(DIG_OUT_1, HIGH);
+                digitalWrite(DIG_OUT_2, LOW);
+                digitalWrite(DIG_OUT_3, LOW);
+                break;
+
+              case 7:
+                digitalWrite(DIG_OUT_1, LOW);
+                digitalWrite(DIG_OUT_2, LOW);
+                digitalWrite(DIG_OUT_3, LOW);
                 break;
 
               default: //NULL_DIGITAL_BYTE COMMAND RECEIVED
